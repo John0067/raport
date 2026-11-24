@@ -1,0 +1,82 @@
+name: Raport zilnic
+
+on:
+  schedule:
+    # Ora 06:20 și 16:50 în Cehia/România (ora de vară și ora de iarnă); filtrul de mai jos rulează doar varianta corectă.
+    - cron: '20 4 * * *'
+    - cron: '20 5 * * *'
+    - cron: '50 14 * * *'
+    - cron: '50 15 * * *'
+  workflow_dispatch:   # buton „Run workflow” pentru rulare manuală oricând
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  raport:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Decide dacă rulăm acum (ora de vară / iarnă)
+        id: gate
+        run: |
+          OFFSET=$(TZ=Europe/Prague date +%z)
+          RUN=yes
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            case "${{ github.event.schedule }}" in
+              "20 4 * * *"|"50 14 * * *") [ "$OFFSET" = "+0200" ] || RUN=no ;;
+              "20 5 * * *"|"50 15 * * *") [ "$OFFSET" = "+0100" ] || RUN=no ;;
+            esac
+          fi
+          echo "run=$RUN" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'yes'
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.run == 'yes'
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalează dependențele
+        if: steps.gate.outputs.run == 'yes'
+        run: pip install -r requirements.txt
+
+      - name: Generează raportul
+        if: steps.gate.outputs.run == 'yes'
+        env:
+          ICAL_URLS: ${{ secrets.ICAL_URLS }}
+          PAGE_PASSWORD: ${{ secrets.PAGE_PASSWORD }}
+        run: python generate.py
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.gate.outputs.run == 'yes'
+        with:
+          path: site
+
+      - name: Publică pagina
+        id: deployment
+        if: steps.gate.outputs.run == 'yes'
+        uses: actions/deploy-pages@v4
+
+      - name: Trimite notificare pe telefon
+        if: steps.gate.outputs.run == 'yes'
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          [ -n "$NTFY_TOPIC" ] || { echo "NTFY_TOPIC nesetat – sar peste notificare"; exit 0; }
+          H=$(TZ=Europe/Prague date +%H)
+          if [ "$H" -lt 12 ]; then T="☕ Raportul de dimineață e gata"; else T="🌙 Raportul de seară e gata"; fi
+          jq -n --arg topic "$NTFY_TOPIC" --arg title "$T" --arg msg "$(cat site/summary.txt)" --arg url "$PAGE_URL" \
+            '{topic:$topic,title:$title,message:$msg,click:$url,tags:["coffee"],actions:[{action:"view",label:"Deschide",url:$url}]}' \
+            | curl -sf -H "Content-Type: application/json" -d @- https://ntfy.sh
