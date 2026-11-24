@@ -10,20 +10,15 @@ on:
   workflow_dispatch:   # buton „Run workflow” pentru rulare manuală oricând
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: raport
   cancel-in-progress: false
 
 jobs:
   raport:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Decide dacă rulăm acum (ora de vară / iarnă)
         id: gate
@@ -58,22 +53,21 @@ jobs:
           PAGE_PASSWORD: ${{ secrets.PAGE_PASSWORD }}
         run: python generate.py
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Publică pagina (ramura gh-pages)
         if: steps.gate.outputs.run == 'yes'
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: site
-
-      - name: Publică pagina
-        id: deployment
-        if: steps.gate.outputs.run == 'yes'
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          force_orphan: true
 
       - name: Trimite notificare pe telefon
         if: steps.gate.outputs.run == 'yes'
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
+          OWNER=$(echo "$GITHUB_REPOSITORY_OWNER" | tr 'A-Z' 'a-z')
+          PAGE_URL="https://${OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"
           [ -n "$NTFY_TOPIC" ] || { echo "NTFY_TOPIC nesetat – sar peste notificare"; exit 0; }
           H=$(TZ=Europe/Prague date +%H)
           if [ "$H" -lt 12 ]; then T="☕ Raportul de dimineață e gata"; else T="🌙 Raportul de seară e gata"; fi
