@@ -2,7 +2,8 @@ name: Raport zilnic
 
 on:
   schedule:
-    # Ora 06:20 și 16:50 în Cehia/România (ora de vară și ora de iarnă); filtrul de mai jos rulează doar varianta corectă.
+    # Ora 06:20 și 16:50 în Cehia/România (ora de vară și ora de iarnă).
+    # Patru cron-uri; garda de mai jos decide după ora locală reală, nu după cron.
     - cron: '20 4 * * *'
     - cron: '20 5 * * *'
     - cron: '50 14 * * *'
@@ -20,22 +21,28 @@ jobs:
   raport:
     runs-on: ubuntu-latest
     steps:
-      -       - name: Decide dacă rulăm acum (ora de vară / iarnă)
+      - name: Decide dacă rulăm acum (ora de vară / iarnă)
         id: gate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          CRON_NAME: ${{ github.event.schedule }}
+          REPO: ${{ github.repository }}
         run: |
-          H=$(TZ=Europe/Prague date +%H); H=$((10#$H))
+          H=$(TZ=Europe/Prague date +%H)
+          H=$((10#$H))
           RUN=yes
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          AGE=n/a
+          if [ "$EVENT_NAME" = "schedule" ]; then
             RUN=no
-            if { [ $H -ge 6 ] && [ $H -lt 8 ]; } || { [ $H -ge 16 ] && [ $H -lt 18 ]; }; then
-              LAST=$(gh api "repos/${{ github.repository }}/commits/gh-pages" --jq .commit.committer.date 2>/dev/null || echo 1970-01-01T00:00:00Z)
+            if { [ "$H" -ge 6 ] && [ "$H" -lt 8 ]; } || { [ "$H" -ge 16 ] && [ "$H" -lt 18 ]; }; then
+              LAST=$(gh api "repos/$REPO/commits/gh-pages" --jq .commit.committer.date 2>/dev/null) || LAST=""
+              case "$LAST" in 20??-??-??T*Z) ;; *) LAST=1970-01-01T00:00:00Z ;; esac
               AGE=$(( $(date +%s) - $(date -d "$LAST" +%s) ))
-              [ "$AGE" -gt 10800 ] && RUN=yes
+              if [ "$AGE" -gt 10800 ]; then RUN=yes; fi
             fi
-            echo "cron='${{ github.event.schedule }}' ora_Praga=${H}h ultima_publicare_acum=${AGE:-n/a}s -> run=$RUN"
           fi
+          echo "event=$EVENT_NAME cron='$CRON_NAME' ora_Praga=${H}h ultima_publicare_acum=${AGE}s -> run=$RUN"
           echo "run=$RUN" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
