@@ -20,16 +20,21 @@ jobs:
   raport:
     runs-on: ubuntu-latest
     steps:
-      - name: Decide dacă rulăm acum (ora de vară / iarnă)
+      -       - name: Decide dacă rulăm acum (ora de vară / iarnă)
         id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          OFFSET=$(TZ=Europe/Prague date +%z)
+          H=$(TZ=Europe/Prague date +%H); H=$((10#$H))
           RUN=yes
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            case "${{ github.event.schedule }}" in
-              "20 4 * * *"|"50 14 * * *") [ "$OFFSET" = "+0200" ] || RUN=no ;;
-              "20 5 * * *"|"50 15 * * *") [ "$OFFSET" = "+0100" ] || RUN=no ;;
-            esac
+            RUN=no
+            if { [ $H -ge 6 ] && [ $H -lt 8 ]; } || { [ $H -ge 16 ] && [ $H -lt 18 ]; }; then
+              LAST=$(gh api "repos/${{ github.repository }}/commits/gh-pages" --jq .commit.committer.date 2>/dev/null || echo 1970-01-01T00:00:00Z)
+              AGE=$(( $(date +%s) - $(date -d "$LAST" +%s) ))
+              [ "$AGE" -gt 10800 ] && RUN=yes
+            fi
+            echo "cron='${{ github.event.schedule }}' ora_Praga=${H}h ultima_publicare_acum=${AGE:-n/a}s -> run=$RUN"
           fi
           echo "run=$RUN" >> "$GITHUB_OUTPUT"
 
