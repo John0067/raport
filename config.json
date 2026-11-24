@@ -2,53 +2,195 @@
   "title": "Raportul meu de zi",
   "name": "",
   "timezone": "Europe/Prague",
-  "sections": ["weather", "calendar", "holidays", "news_ro", "news_world", "fx"],
-  "show_clothing": true,
-
-  "locations": [
-    {"name": "Žatec", "emoji": "📍", "lat": 50.3273, "lon": 13.5457},
-    {"name": "Albești, Dolj", "emoji": "🏡", "lat": 44.37456, "lon": 23.76704}
+  "sections": [
+    "weather",
+    "calendar",
+    "holidays",
+    "news_ro",
+    "news_world",
+    "news_tech",
+    "fx"
   ],
-
+  "show_clothing": true,
+  "locations": [
+    {
+      "name": "Žatec",
+      "emoji": "📍",
+      "lat": 50.3273,
+      "lon": 13.5457
+    },
+    {
+      "name": "Albești, Dolj",
+      "emoji": "🏡",
+      "lat": 44.37456,
+      "lon": 23.76704
+    },
+    {
+      "name": "Craiova",
+      "emoji": "🇷🇴",
+      "lat": 44.3302,
+      "lon": 23.7949
+    },
+    {
+      "name": "București",
+      "emoji": "🇷🇴",
+      "lat": 44.4268,
+      "lon": 26.1025
+    },
+    {
+      "name": "Budapesta",
+      "emoji": "🇭🇺",
+      "lat": 47.4979,
+      "lon": 19.0402
+    },
+    {
+      "name": "Pápa",
+      "emoji": "🇭🇺",
+      "lat": 47.3303,
+      "lon": 17.4667
+    },
+    {
+      "name": "Kragujevac",
+      "emoji": "🇷🇸",
+      "lat": 44.0128,
+      "lon": 20.9114
+    },
+    {
+      "name": "Tábor",
+      "emoji": "🇨🇿",
+      "lat": 49.4144,
+      "lon": 14.6578
+    },
+    {
+      "name": "Praga",
+      "emoji": "🇨🇿",
+      "lat": 50.0755,
+      "lon": 14.4378
+    },
+    {
+      "name": "Valencia",
+      "emoji": "🇪🇸",
+      "lat": 39.4699,
+      "lon": -0.3763
+    }
+  ],
   "holidays": {
-    "countries": ["RO", "CZ", "GB", "DE", "FR", "IT", "ES", "PL", "HU", "AT"],
-    "upcoming_for": ["RO", "CZ"]
+    "countries": [
+      "RO",
+      "CZ",
+      "GB",
+      "DE",
+      "FR",
+      "IT",
+      "ES",
+      "PL",
+      "HU",
+      "AT"
+    ],
+    "upcoming_for": [
+      "RO",
+      "CZ"
+    ]
   },
-
   "news_items_per_category": 6,
   "news": {
     "ro": {
       "📰 Generale": [
-        {"gnews_top": true},
-        {"gnews": "România when:1d"}
+        {
+          "gnews_top": true
+        },
+        {
+          "gnews": "România when:1d"
+        }
       ],
       "🏛️ Politică": [
-        {"gnews": "politică România guvern parlament when:1d"}
+        {
+          "gnews": "politică România guvern parlament when:1d"
+        }
       ],
       "⚽ Sport": [
-        {"gnews": "fotbal România when:1d"},
-        {"gnews": "handbal when:1d"}
+        {
+          "gnews": "fotbal România when:1d"
+        },
+        {
+          "gnews": "handbal when:1d"
+        }
       ]
     },
     "world": {
       "🌍 Generale": [
-        {"gnews_topic": "WORLD"},
-        {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "label": "BBC"}
+        {
+          "gnews_topic": "WORLD"
+        },
+        {
+          "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+          "label": "BBC"
+        }
       ],
       "🕊️ Politică": [
-        {"gnews": "NATO OR \"Uniunea Europeană\" OR \"Casa Albă\" OR Kremlin when:1d"},
-        {"url": "https://feeds.bbci.co.uk/news/politics/rss.xml", "label": "BBC"}
+        {
+          "gnews": "NATO OR \"Uniunea Europeană\" OR \"Casa Albă\" OR Kremlin when:1d"
+        },
+        {
+          "url": "https://feeds.bbci.co.uk/news/politics/rss.xml",
+          "label": "BBC"
+        }
       ],
       "🏆 Sport": [
-        {"gnews": "\"Champions League\" OR NBA OR \"Formula 1\" OR tenis when:1d"},
-        {"url": "https://feeds.bbci.co.uk/sport/football/rss.xml", "label": "BBC"}
+        {
+          "gnews": "\"Champions League\" OR NBA OR \"Formula 1\" OR tenis when:1d"
+        },
+        {
+          "url": "https://feeds.bbci.co.uk/sport/football/rss.xml",
+          "label": "BBC"
+        }
+      ]
+    },
+    "tech": {
+      "🔬 Știință": [
+        {
+          "gnews_topic": "SCIENCE"
+        },
+        {
+          "url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+          "label": "BBC"
+        }
+      ],
+      "💻 Tehnologie": [
+        {
+          "gnews_topic": "TECHNOLOGY"
+        },
+        {
+          "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+          "label": "BBC"
+        }
+      ],
+      "🚗 Automotive": [
+        {
+          "gnews": "industria auto OR \"mașini electrice\" OR Dacia OR Tesla OR Volkswagen when:1d"
+        },
+        {
+          "gnews": "automotive OR \"electric cars\" when:2d"
+        }
       ]
     }
   },
-
   "fx": {
-    "show": ["EUR", "USD", "CZK"],
-    "cross": [["EUR", "CZK"]],
+    "show": [
+      "EUR",
+      "USD",
+      "CZK"
+    ],
+    "cross": [
+      [
+        "EUR",
+        "CZK"
+      ]
+    ],
     "days": 30
-  }
+  },
+  "panels": [
+    "Žatec",
+    "Albești, Dolj"
+  ]
 }

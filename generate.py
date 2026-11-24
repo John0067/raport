@@ -26,21 +26,41 @@ TARI = {"RO": "România", "CZ": "Cehia", "GB": "Marea Britanie", "DE": "Germania
         "SK": "Slovacia", "IE": "Irlanda", "NL": "Olanda", "BE": "Belgia",
         "PT": "Portugalia", "MD": "Moldova", "CH": "Elveția", "SE": "Suedia"}
 
-GANDURI = [
-    "Respiră adânc. Lista de azi nu fuge nicăieri 🌿",
-    "Un pas mic tot pas e. Și cafeaua ajută ☕",
-    "Nu trebuie să faci totul azi. Doar ce contează 🍃",
-    "Fă o pauză de 5 minute. Serios. Corpul îți mulțumește 🫖",
-    "Azi poate fi o zi bună, chiar dacă începe încet 🌤️",
-    "Apă, soare (dacă e) și un gând frumos 💧",
-    "Nu compara ziua ta cu a altcuiva 🌸",
-    "Mai încet = mai departe, uneori 🐢",
-    "Un zâmbet costă zero și merge cu orice haină 😊",
-    "Bifează un lucru mic, bucură-te de el ✅",
-    "Fii blând cu tine azi 🤍",
-    "Mâncarea bună face parte din productivitate 🥐",
-    "Câteva minute de aer curat schimbă tot 🌬️",
-    "Ce nu iese azi, iese mâine. Promit 🌙",
+CITATE = [
+    ("Dacă ceva poate merge prost, va merge prost.", "Legea lui Murphy"),
+    ("Nimic nu e atât de simplu pe cât pare.", "Legile lui Murphy"),
+    ("Orice durează mai mult decât crezi.", "Legile lui Murphy"),
+    ("Dacă mai multe lucruri pot merge prost, va merge prost cel care face cele mai mari stricăciuni.", "Legile lui Murphy"),
+    ("Orice lucru pe care vrei să-l faci cere mai întâi să faci altceva.", "Legile lui Murphy"),
+    ("Lăsate de capul lor, lucrurile tind să meargă de la rău spre mai rău.", "Legile lui Murphy"),
+    ("Pâinea prăjită unsă cu unt cade întotdeauna cu partea unsă în jos.", "Legile lui Murphy"),
+    ("Coada de alături merge mereu mai repede decât a ta.", "Legile lui Murphy"),
+    ("Dacă un experiment merge perfect din prima, ceva nu e în regulă.", "Legea lui Finagle"),
+    ("Munca se extinde până umple tot timpul care i-a fost dat.", "Legea lui Parkinson"),
+    ("Durează mereu mai mult decât te aștepți, chiar și atunci când ții cont de legea lui Hofstadter.", "Legea lui Hofstadter"),
+    ("Nu pune pe seama răutății ceea ce se explică suficient de bine prin prostie.", "Briciul lui Hanlon"),
+    ("Într-o ierarhie, fiecare tinde să urce până la nivelul lui de incompetență.", "Principiul lui Peter"),
+    ("Când o măsură devine țintă, încetează să mai fie o măsură bună.", "Legea lui Goodhart"),
+    ("Adăugarea de oameni la un proiect întârziat îl întârzie și mai mult.", "Legea lui Brooks"),
+    ("Nimic nu e construit la timp și în buget.", "Legea lui Cheops"),
+    ("Un drum de o mie de mile începe cu un singur pas.", "Lao Tzî"),
+    ("Nu contează cât de încet mergi, atâta timp cât nu te oprești.", "Confucius"),
+    ("Nu pentru că lucrurile sunt grele nu îndrăznim; pentru că nu îndrăznim, ele sunt grele.", "Seneca"),
+    ("Nu există vânt prielnic pentru cine nu știe încotro merge.", "Seneca"),
+    ("Imaginația este mai importantă decât cunoașterea.", "Albert Einstein"),
+    ("Cel mai bun mod de a prezice viitorul este să-l creezi.", "atribuit lui Peter Drucker"),
+    ("Secretul progresului este să începi.", "atribuit lui Mark Twain"),
+    ("Excelența nu e un act, ci un obicei.", "Will Durant, despre Aristotel"),
+    ("Cine are un «de ce» pentru care să trăiască poate îndura aproape orice «cum».", "Friedrich Nietzsche"),
+    ("Singurul lucru pe care îl știu este că nu știu nimic.", "atribuit lui Socrate"),
+    ("Orice expert a fost cândva începător.", "Helen Hayes"),
+    ("Fii tu însuți; toți ceilalți sunt deja luați.", "atribuit lui Oscar Wilde"),
+    ("Cine se scoală de dimineață, departe ajunge.", "proverb românesc"),
+    ("Omul sfințește locul.", "proverb românesc"),
+    ("Încet-încet, se face drumul.", "vorbă românească"),
+    ("Nu lăsa pe mâine ce poți face azi, dar nici nu te grăbi ce poți face frumos.", "vorbă de bun-simț"),
+    ("Ai putere asupra minții tale, nu asupra evenimentelor de afară. Înțelege asta și vei găsi liniște.", "Marcus Aurelius"),
+    ("Fericirea ține de puterea de a te bucura de lucrurile mici.", "vorbă de seară liniștită"),
 ]
 
 WMO = {
@@ -121,7 +141,7 @@ def soft_error(what):
 
 def fetch_weather(loc):
     q = {
-        "latitude": loc["lat"], "longitude": loc["lon"], "timezone": "auto", "forecast_days": 3,
+        "latitude": loc["lat"], "longitude": loc["lon"], "timezone": "auto", "forecast_days": 5,
         "current": "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m",
         "daily": ("weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,"
                   "apparent_temperature_min,precipitation_probability_max,precipitation_sum,"
@@ -190,39 +210,95 @@ def hhmm(iso):
     return iso[11:16] if iso and len(iso) >= 16 else "–"
 
 
-def render_weather(wlist, edition, show_clothing):
-    out = []
-    idx = 1 if edition == "evening" else 0
-    for w in wlist:
-        loc, cur, days = w["loc"], w["cur"], w["days"]
-        today = days[0]
-        e, txt = WMO.get(cur["code"], ("🌡️", ""))
-        tgt = days[min(idx, len(days) - 1)]
-        te, ttxt = WMO.get(tgt["code"], ("🌡️", ""))
-        nxt = days[1] if len(days) > 1 else None
-        ne, ntxt = WMO.get(nxt["code"], ("🌡️", "")) if nxt else ("", "")
-        card = [f'<div class="card"><h2>{esc(loc.get("emoji", "📍"))} {esc(loc["name"])}</h2>',
-                f'<div class="now"><span class="big">{e} {cur["temp"]:.0f}°</span>'
-                f'<span class="desc">{esc(txt)} · se simte ca {cur["feels"]:.0f}°</span></div>',
-                '<div class="chips">'
-                f'<span>🌡️ {today["tmin"]:.0f}° / {today["tmax"]:.0f}°</span>'
-                f'<span>☔ {today["pop"]:.0f}%</span>'
-                f'<span>💨 {cur["wind"]:.0f} km/h</span>'
-                f'<span>💧 {cur["hum"]:.0f}%</span>'
-                f'<span>🌅 {hhmm(today["sunrise"])}</span><span>🌇 {hhmm(today["sunset"])}</span></div>']
-        if nxt and edition != "evening":
-            card.append(f'<p class="muted">Mâine: {ne} {ntxt} · {nxt["tmin"]:.0f}° / {nxt["tmax"]:.0f}° · ☔ {nxt["pop"]:.0f}%</p>')
-        if show_clothing:
-            title = "Ce îmbraci mâine" if edition == "evening" else "Ce îmbraci azi"
-            if edition == "evening":
-                card.append(f'<p class="muted">Mâine: {te} {ttxt} · {tgt["tmin"]:.0f}° / {tgt["tmax"]:.0f}°</p>')
-            card.append(f'<h3>🧥 {title}</h3><ul class="dress">')
-            for em, t in clothing(tgt):
-                card.append(f"<li><span>{em}</span> {esc(t)}</li>")
-            card.append("</ul>")
-        card.append("</div>")
-        out.append("".join(card))
-    return '<div class="grid two">' + "".join(out) + "</div>"
+SCURT = ["Lun", "Mar", "Mie", "Joi", "Vin", "Sâm", "Dum"]
+
+
+def moon_info(d):
+    """Faza Lunii calculată local (aproximativ, ±câteva ore)."""
+    import math
+    from datetime import timezone
+    ref = datetime(2000, 1, 6, 18, 14, tzinfo=timezone.utc)
+    now = datetime(d.year, d.month, d.day, 12, tzinfo=timezone.utc)
+    syn = 29.530588853
+    age = ((now - ref).total_seconds() / 86400) % syn
+    illum = (1 - math.cos(2 * math.pi * age / syn)) / 2 * 100
+    phases = [(1.85, "🌑", "Lună nouă"), (5.54, "🌒", "Semilună crescătoare"), (9.23, "🌓", "Primul pătrar"),
+              (12.92, "🌔", "Lună crescătoare"), (16.61, "🌕", "Lună plină"), (20.3, "🌖", "Lună descrescătoare"),
+              (23.99, "🌗", "Ultimul pătrar"), (27.68, "🌘", "Semilună descrescătoare"), (99, "🌑", "Lună nouă")]
+    em, name = next((e, n) for lim, e, n in phases if age < lim)
+    to_new = syn - age
+    to_full = (syn / 2 - age) if age < syn / 2 else (syn * 1.5 - age)
+    return {"emoji": em, "name": name, "illum": illum, "new": d + timedelta(days=round(to_new)),
+            "full": d + timedelta(days=round(to_full))}
+
+
+def day_length(sr, ss):
+    try:
+        a = datetime.fromisoformat(sr); b = datetime.fromisoformat(ss)
+        m = int((b - a).total_seconds() // 60)
+        return f"{m // 60} h {m % 60:02d} min"
+    except Exception:
+        return "–"
+
+
+def short_date(d):
+    return f"{d.day} {LUNI[d.month - 1][:3]}."
+
+
+def render_location_card(w, edition, show_clothing, today):
+    loc, cur, days = w["loc"], w["cur"], w["days"]
+    t0 = days[0]
+    e, txt = WMO.get(cur["code"], ("🌡️", ""))
+    idx = 1 if edition == "evening" and len(days) > 1 else 0
+    tgt = days[idx]
+    moon = moon_info(today)
+    p = [f'<h2>{esc(loc.get("emoji", "📍"))} {esc(loc["name"])}</h2>',
+         f'<div class="now"><span class="big">{e} {cur["temp"]:.0f}°</span>'
+         f'<span class="desc">{esc(txt)} · se simte ca {cur["feels"]:.0f}°</span></div>',
+         '<div class="chips">'
+         f'<span>🌡️ azi {t0["tmin"]:.0f}° / {t0["tmax"]:.0f}°</span><span>☔ {t0["pop"]:.0f}%</span>'
+         f'<span>💨 {cur["wind"]:.0f} km/h</span><span>💧 {cur["hum"]:.0f}%</span></div>',
+         '<h3>🌅 Soare și Lună</h3><div class="chips">'
+         f'<span>🌅 răsărit {hhmm(t0["sunrise"])}</span><span>🌇 apus {hhmm(t0["sunset"])}</span>'
+         f'<span>⏳ zi de {day_length(t0["sunrise"], t0["sunset"])}</span>'
+         f'<span>{moon["emoji"]} {esc(moon["name"])} · {moon["illum"]:.0f}% luminată</span></div>'
+         f'<p class="muted tiny">Următoarea lună plină: ~{short_date(moon["full"])} · lună nouă: ~{short_date(moon["new"])}</p>',
+         f'<h3>📅 Următoarele {len(days)} zile</h3><div class="fc">']
+    for i, d in enumerate(days):
+        dd = date.fromisoformat(d["date"])
+        label = "Azi" if i == 0 else "Mâine" if i == 1 else f"{SCURT[dd.weekday()]} {dd.day}"
+        ee, tt = WMO.get(d["code"], ("🌡️", ""))
+        p.append(f'<div class="fcrow"><span class="fd">{label}</span><span class="fi" title="{esc(tt)}">{ee}</span>'
+                 f'<span class="ft"><b>{d["tmax"]:.0f}°</b> zi · {d["tmin"]:.0f}° noapte</span>'
+                 f'<span class="fp">☔ {d["pop"]:.0f}%</span></div>')
+    p.append("</div>")
+    if show_clothing:
+        title = "Ce îmbraci mâine" if idx == 1 else "Ce îmbraci azi"
+        p.append(f'<h3>🧥 {title}</h3><ul class="dress">')
+        for em, t in clothing(tgt):
+            p.append(f"<li><span>{em}</span> {esc(t)}</li>")
+        p.append("</ul>")
+    return "".join(p)
+
+
+def render_weather(wlist, edition, show_clothing, today, panels):
+    """Panouri cu listă de locații: cardurile sunt toate în pagină, alegerea se face din meniu."""
+    cards = [render_location_card(w, edition, show_clothing, today) for w in wlist]
+    names = [w["loc"]["name"] for w in wlist]
+    opts_all = [f'{w["loc"].get("emoji", "📍")} {w["loc"]["name"]}' for w in wlist]
+    defaults = []
+    for i, pn in enumerate(panels or names[:2]):
+        defaults.append(names.index(pn) if pn in names else min(i, len(names) - 1))
+    out = ['<div class="grid two">']
+    for pi, di in enumerate(defaults):
+        opts = "".join(f'<option value="{esc(n)}"{" selected" if k == di else ""}>{esc(o)}</option>'
+                       for k, (n, o) in enumerate(zip(names, opts_all)))
+        out.append(f'<div class="card panel" data-panel="{pi}"><div class="pick"><label>Locație: '
+                   f'<select>{opts}</select></label></div><div class="panel-body">{cards[di]}</div></div>')
+    out.append("</div>")
+    out.append('<div id="wx-store" hidden>' + "".join(
+        f'<div data-loc="{esc(n)}">{c}</div>' for n, c in zip(names, cards)) + "</div>")
+    return "".join(out)
 
 
 # ───────────────────────── CALENDAR (criptat) ─────────────────────────
@@ -522,6 +598,7 @@ def fetch_fx(today, days):
         for dt, r in j["rates"].items():
             data[dt] = {"EUR": r["RON"], "USD": r["RON"] / r["USD"], "CZK": r["RON"] / r["CZK"]}
         if data:
+            STATUS[:] = [x for x in STATUS if not x.startswith("curs BNR")]
             return data, "BCE (Frankfurter)"
     except Exception as e:
         warn("curs BCE", e)
@@ -566,19 +643,20 @@ def render_fx(data, src, cfg, today):
 
 # ───────────────────────── DEMO ─────────────────────────
 
-def demo_weather(locs):
+def demo_weather(locs, today):
     import random
     rnd = random.Random(7)
     out = []
     for i, loc in enumerate(locs):
-        base = 5 if i == 0 else 9
+        base = 3 + (i * 2) % 12
         days = []
-        for k in range(3):
+        for k in range(5):
             tm = base + 3 + k - rnd.random()
-            days.append({"date": f"2026-11-{24 + k}", "code": [3, 61, 2][(k + i) % 3], "tmax": tm, "tmin": tm - 7,
-                         "fmax": tm - 2, "fmin": tm - 9, "pop": [40, 70, 20][(k + i) % 3], "precip": 1.2,
-                         "wind": [18, 34, 12][(k + i) % 3], "uv": 1, "sunrise": f"2026-11-{24 + k}T07:04",
-                         "sunset": f"2026-11-{24 + k}T15:56"})
+            dd = today + timedelta(days=k)
+            days.append({"date": dd.isoformat(), "code": [3, 61, 2, 0, 71][(k + i) % 5], "tmax": tm, "tmin": tm - 7,
+                         "fmax": tm - 2, "fmin": tm - 9, "pop": [40, 70, 20, 5, 55][(k + i) % 5], "precip": 1.2,
+                         "wind": [18, 34, 12, 8, 20][(k + i) % 5], "uv": 1, "sunrise": f"{dd.isoformat()}T07:04",
+                         "sunset": f"{dd.isoformat()}T15:56"})
         out.append({"loc": loc, "cur": {"temp": base + 1, "feels": base - 2, "code": 3, "wind": 14, "hum": 78}, "days": days})
     return out
 
@@ -629,13 +707,13 @@ def build(args):
     greet = ("Bună dimineața" if edition == "morning" else "Bună seara") + (f", {name}" if name else "")
     greet += " ☕" if edition == "morning" else " 🌙"
     date_txt = f"{ZILE[today.weekday()].capitalize()}, {today.day} {LUNI[today.month - 1]} {today.year}"
-    gand = GANDURI[today.timetuple().tm_yday % len(GANDURI)]
+    qtext, qauthor = CITATE[today.timetuple().tm_yday % len(CITATE)]
 
     for sec in cfg["sections"]:
         try:
             if sec == "weather":
                 if demo:
-                    wl = demo_weather(cfg["locations"])
+                    wl = demo_weather(cfg["locations"], today)
                 else:
                     wl = []
                     for loc in cfg["locations"]:
@@ -644,8 +722,8 @@ def build(args):
                         except Exception as e:
                             warn(f"vreme {loc['name']}", e)
                 if wl:
-                    sections.append(render_weather(wl, edition, cfg.get("show_clothing", True)))
-                    w0 = wl[0]
+                    sections.append(render_weather(wl, edition, cfg.get("show_clothing", True), today, cfg.get("panels")))
+                    w0 = next((w for w in wl if w["loc"]["name"] == (cfg.get("panels") or [wl[0]["loc"]["name"]])[0]), wl[0])
                     summary.append(f"{w0['loc']['name']} {w0['cur']['temp']:.0f}° {WMO.get(w0['cur']['code'], ('',''))[0]}"
                                    f" (azi {w0['days'][0]['tmin']:.0f}°/{w0['days'][0]['tmax']:.0f}°)")
                 else:
@@ -687,12 +765,13 @@ def build(args):
                     per_c, upc = holidays_for(cfg["holidays"], today)
                 sections.append(render_holidays(today, saints, src, per_c, upc))
 
-            elif sec in ("news_ro", "news_world"):
-                key = "ro" if sec == "news_ro" else "world"
+            elif sec in ("news_ro", "news_world", "news_tech"):
+                key = {"news_ro": "ro", "news_world": "world", "news_tech": "tech"}[sec]
                 feeds = cfg["news"][key]
                 cats = demo_news(feeds) if demo else {n: fetch_news_category(f, n_news) for n, f in feeds.items()}
-                sections.append(render_news("Știri din România" if key == "ro" else "Știri din lume",
-                                            "🇷🇴" if key == "ro" else "🌍", cats))
+                ttl = {"ro": ("Știri din România", "🇷🇴"), "world": ("Știri din lume", "🌍"),
+                       "tech": ("Știință, tehnologie și auto", "🔬")}[key]
+                sections.append(render_news(ttl[0], ttl[1], cats))
 
             elif sec == "fx":
                 if demo:
@@ -713,7 +792,7 @@ def build(args):
         footer += "<br>⚠️ " + esc(" · ".join(STATUS[:6]))
     page = (tpl.replace("{{TITLE}}", esc(cfg.get("title", "Raport")))
             .replace("{{GREETING}}", esc(greet)).replace("{{DATE}}", esc(date_txt))
-            .replace("{{THOUGHT}}", esc(gand)).replace("{{EDITION}}", edition)
+            .replace("{{QUOTE}}", f'<blockquote class="quote">„{esc(qtext)}”<cite>— {esc(qauthor)}</cite></blockquote>').replace("{{EDITION}}", edition)
             .replace("{{SECTIONS}}", "\n".join(sections)).replace("{{FOOTER}}", footer))
     out = ROOT / args.out
     out.mkdir(parents=True, exist_ok=True)
