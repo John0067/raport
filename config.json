@@ -1,0 +1,54 @@
+{
+  "title": "Raportul meu de zi",
+  "name": "",
+  "timezone": "Europe/Prague",
+  "sections": ["weather", "calendar", "holidays", "news_ro", "news_world", "fx"],
+  "show_clothing": true,
+
+  "locations": [
+    {"name": "Žatec", "emoji": "📍", "lat": 50.3273, "lon": 13.5457},
+    {"name": "Albești, Dolj", "emoji": "🏡", "lat": 44.37456, "lon": 23.76704}
+  ],
+
+  "holidays": {
+    "countries": ["RO", "CZ", "GB", "DE", "FR", "IT", "ES", "PL", "HU", "AT"],
+    "upcoming_for": ["RO", "CZ"]
+  },
+
+  "news_items_per_category": 6,
+  "news": {
+    "ro": {
+      "📰 Generale": [
+        {"gnews_top": true},
+        {"gnews": "România when:1d"}
+      ],
+      "🏛️ Politică": [
+        {"gnews": "politică România guvern parlament when:1d"}
+      ],
+      "⚽ Sport": [
+        {"gnews": "fotbal România when:1d"},
+        {"gnews": "handbal when:1d"}
+      ]
+    },
+    "world": {
+      "🌍 Generale": [
+        {"gnews_topic": "WORLD"},
+        {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "label": "BBC"}
+      ],
+      "🕊️ Politică": [
+        {"gnews": "NATO OR \"Uniunea Europeană\" OR \"Casa Albă\" OR Kremlin when:1d"},
+        {"url": "https://feeds.bbci.co.uk/news/politics/rss.xml", "label": "BBC"}
+      ],
+      "🏆 Sport": [
+        {"gnews": "\"Champions League\" OR NBA OR \"Formula 1\" OR tenis when:1d"},
+        {"url": "https://feeds.bbci.co.uk/sport/football/rss.xml", "label": "BBC"}
+      ]
+    }
+  },
+
+  "fx": {
+    "show": ["EUR", "USD", "CZK"],
+    "cross": [["EUR", "CZK"]],
+    "days": 30
+  }
+}
