@@ -2,10 +2,12 @@ name: Raport zilnic
 
 on:
   schedule:
-    # Ora 06:20 și 16:50 în Cehia/România (ora de vară și ora de iarnă).
-    # Patru cron-uri; garda de mai jos decide după ora locală reală, nu după cron.
+    # Ora 06:20, 13:00 și 16:50 în Cehia/România (ora de vară și ora de iarnă).
+    # Șase cron-uri; garda de mai jos decide după ora locală reală, nu după cron.
     - cron: '20 4 * * *'
     - cron: '20 5 * * *'
+    - cron: '0 11 * * *'
+    - cron: '0 12 * * *'
     - cron: '50 14 * * *'
     - cron: '50 15 * * *'
   workflow_dispatch:   # buton „Run workflow” pentru rulare manuală oricând
@@ -35,7 +37,7 @@ jobs:
           AGE=n/a
           if [ "$EVENT_NAME" = "schedule" ]; then
             RUN=no
-            if { [ "$H" -ge 6 ] && [ "$H" -lt 8 ]; } || { [ "$H" -ge 16 ] && [ "$H" -lt 18 ]; }; then
+            if { [ "$H" -ge 6 ] && [ "$H" -lt 8 ]; } || { [ "$H" -ge 13 ] && [ "$H" -lt 15 ]; } || { [ "$H" -ge 16 ] && [ "$H" -lt 18 ]; }; then
               LAST=$(gh api "repos/$REPO/commits/gh-pages" --jq .commit.committer.date 2>/dev/null) || LAST=""
               case "$LAST" in 20??-??-??T*Z) ;; *) LAST=1970-01-01T00:00:00Z ;; esac
               AGE=$(( $(date +%s) - $(date -d "$LAST" +%s) ))
@@ -63,7 +65,10 @@ jobs:
         env:
           ICAL_URLS: ${{ secrets.ICAL_URLS }}
           PAGE_PASSWORD: ${{ secrets.PAGE_PASSWORD }}
-        run: python generate.py
+        run: |
+          H=$(TZ=Europe/Prague date +%H)
+          if [ "$((10#$H))" -lt 15 ]; then ED=morning; else ED=evening; fi
+          python run_report.py --edition "$ED"
 
       - name: Publică pagina (ramura gh-pages)
         if: steps.gate.outputs.run == 'yes'
@@ -82,7 +87,7 @@ jobs:
           PAGE_URL="https://${OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"
           [ -n "$NTFY_TOPIC" ] || { echo "NTFY_TOPIC nesetat – sar peste notificare"; exit 0; }
           H=$(TZ=Europe/Prague date +%H)
-          if [ "$H" -lt 12 ]; then T="☕ Raportul de dimineață e gata"; else T="🌙 Raportul de seară e gata"; fi
+          if [ "$((10#$H))" -lt 15 ]; then T="☕ Raportul de zi e gata"; else T="🌙 Raportul de seară e gata"; fi
           jq -n --arg topic "$NTFY_TOPIC" --arg title "$T" --arg msg "$(cat site/summary.txt)" --arg url "$PAGE_URL" \
             '{topic:$topic,title:$title,message:$msg,click:$url,tags:["coffee"],actions:[{action:"view",label:"Deschide",url:$url}]}' \
             | curl -sf -H "Content-Type: application/json" -d @- https://ntfy.sh
